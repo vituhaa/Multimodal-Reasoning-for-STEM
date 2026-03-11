@@ -1,2 +1,2 @@
-# LLM-Training-Acceleration-task-
-Answer for LLM Training Acceleration task by "Future Star Internship".
+# Multimodal Reasoning for STEM
+Answer for "Multimodal Reasoning for STEM" task by Future Star Internship.
