@@ -17,4 +17,5 @@ smolvlm-full/
 *.bin
 !adapter_config.json
 
-!example.png
+!.png
+!.jpg
