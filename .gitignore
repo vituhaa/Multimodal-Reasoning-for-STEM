@@ -13,6 +13,7 @@ __pycache__/
 
 smolvlm-fine-tuned/
 smolvlm-full/
+smolvlm-full-add/
 *.safetensors
 *.bin
 !adapter_config.json

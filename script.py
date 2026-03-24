@@ -1,12 +1,45 @@
 import streamlit as st
 import torch
+import re
 from PIL import Image
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+from io import BytesIO
 from peft import PeftConfig, PeftModel
 from transformers import AutoProcessor, AutoModelForImageTextToText
 
 DEVICE = "cpu"
 
+def render_formula(formula):
+    formula = formula.strip()
+    formula = re.sub(r'\s+', ' ', formula)
+    formula = formula.replace('{ ', '{').replace(' }', '}')
+    formula = re.sub(r'\^\s+', '^', formula)
+    if not formula.startswith('$'):
+        formula = f"${formula}$"
+        
+    fig = plt.figure()
+    ax = fig.add_axes([0,0,1,1])
+    ax.set_axis_off()
+
+    t = ax.text(0.5, 0.5, formula,
+        horizontalalignment='center',
+        verticalalignment='center',
+        fontsize=20, color='black',
+        usetex=False)
+    
+    ax.figure.canvas.draw()
+    bbox = t.get_window_extent()
+    fig.set_size_inches(bbox.width/80,bbox.height/80)
+    buf = BytesIO()
+    fig.savefig(buf, format='png', dpi=100, bbox_inches='tight', pad_inches=0.1, facecolor='white')
+    plt.close(fig)
+    buf.seek(0)
+    return Image.open(buf)
+
+
 model_path = "vituuha/smolvlm-fine-tuned"
+# model_path = "vituuha/smolvlm-full-add"
 peft_config = PeftConfig.from_pretrained(model_path)
 base_model_id = peft_config.base_model_name_or_path
 
@@ -22,8 +55,8 @@ base_model = AutoModelForImageTextToText.from_pretrained(
     torch_dtype=torch.float32,
     attn_implementation="eager",
     trust_remote_code=True,
-    low_cpu_mem_usage=True
-)
+    low_cpu_mem_usage=False
+).to(DEVICE)
 
 model = PeftModel.from_pretrained(
     base_model,
@@ -67,3 +100,6 @@ if input_file is not None:
 
         st.success("Inference result: ")
         st.write(answer)
+
+        output_img = render_formula(answer)
+        st.image(output_img)
